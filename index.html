@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Truck Break-Even Calculator</title>
+  <style>
+    :root {
+      --primary: #ea580c;
+      --primary-hover: #c2410c;
+      --primary-light: #ffedd5;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #b45309;
+      --warning-bg: #fef3c7;
+      --warning-border: #fde68a;
+      --radius: 14px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 12px 28px -4px rgba(234, 88, 12, 0.15), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .truck-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      margin-bottom: 0.75rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Preset bar */
+    .presets-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
+    .preset-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-right: 0.25rem;
+    }
+
+    .preset-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.4rem 0.85rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .preset-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 820px) {
+      .dashboard-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+        align-items: start;
+      }
+      .results-column {
+        position: sticky;
+        top: 1.5rem;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+    }
+
+    .card:last-child {
+      margin-bottom: 0;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.3rem;
+    }
+
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.35rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .prefix, .suffix {
+      position: absolute;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .prefix {
+      left: 0.85rem;
+    }
+
+    .suffix {
+      right: 0.85rem;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      height: 44px;
+      padding: 0.5rem 0.85rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text-main);
+      background-color: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      transition: all 0.15s ease;
+      outline: none;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input.has-prefix {
+      padding-left: 2rem;
+    }
+
+    input.has-suffix {
+      padding-right: 3.5rem;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+    }
+
+    .helper-text {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+
+    /* Results Card */
+    .hero-card {
+      background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%);
+      border: 2px solid #fed7aa;
+      border-radius: var(--radius);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(234, 88, 12, 0.12) 0%, rgba(234, 88, 12, 0) 70%);
+      border-radius: 50%;
+    }
+
+    .hero-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-number-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-number {
+      font-size: clamp(3.2rem, 7vw, 4.2rem);
+      font-weight: 900;
+      color: #9a3412;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-unit {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .hero-subtext {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    /* Stat Cards Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .stat-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-pill-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-pill-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .stat-pill-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    /* Shift pacing meter */
+    .pace-box {
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .pace-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .pace-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .shift-select {
+      width: auto !important;
+      height: 32px !important;
+      font-size: 0.8rem !important;
+      padding: 0.2rem 0.6rem !important;
+      background: #ffffff !important;
+      border-radius: 8px !important;
+    }
+
+    .pace-display {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .pace-display strong {
+      color: var(--primary);
+      font-size: 1.35rem;
+    }
+
+    /* Friendly Error Box */
+    .error-box {
+      display: none;
+      background: var(--warning-bg);
+      border: 1.5px solid var(--warning-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .error-box.active {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .error-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .error-content h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--warning);
+      margin-bottom: 0.2rem;
+    }
+
+    .error-content p {
+      font-size: 0.88rem;
+      color: #92400e;
+      line-height: 1.4;
+    }
+
+    /* Explanation Breakdown */
+    .breakdown-list {
+      list-style: none;
+      font-size: 0.88rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.85rem;
+    }
+
+    .breakdown-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      color: var(--text-muted);
+    }
+
+    .breakdown-item.total {
+      font-weight: 700;
+      color: var(--text-main);
+      border-top: 1px dashed var(--border);
+      margin-top: 0.35rem;
+      padding-top: 0.5rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <header>
+      <div class="truck-badge">🚚 Food Truck Profit & Cost Tool</div>
+      <h1>Daily Break-Even Calculator</h1>
+      <p>See exactly how many meals you must sell each day to cover your costs and keep your food truck running profitably.</p>
+      
+      <!-- Quick Presets -->
+      <div class="presets-bar">
+        <span class="preset-label">Quick Examples:</span>
+        <button type="button" class="preset-btn" onclick="applyPreset('taco')">🌮 Taco Truck</button>
+        <button type="button" class="preset-btn" onclick="applyPreset('burger')">🍔 Gourmet Burgers</button>
+        <button type="button" class="preset-btn" onclick="applyPreset('coffee')">☕ Coffee & Pastries</button>
+      </div>
+    </header>
+
+    <!-- Error Banner -->
+    <div id="errorBanner" class="error-box" role="alert">
+      <div class="error-icon">💡</div>
+      <div class="error-content">
+        <h4 id="errorTitle">Check Your Meal Pricing</h4>
+        <p id="errorMessage">Your food costs are currently higher than your selling price.</p>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+      <!-- LEFT COLUMN: Inputs -->
+      <div class="inputs-column">
+
+        <!-- 1. Per-Meal Economics -->
+        <section class="card">
+          <div class="card-title">
+            <span>🍽️</span>
+            <span>1. What You Charge & Meal Costs</span>
+          </div>
+          <p class="card-subtitle">Your pricing and what each individual order costs to prepare.</p>
+
+          <div class="form-group">
+            <label for="mealPrice">Average Selling Price per Meal</label>
+            <div class="input-wrapper">
+              <span class="prefix">$</span>
+              <input type="number" id="mealPrice" class="has-prefix" step="0.25" min="0" value="14.00">
+            </div>
+            <div class="helper-text">What an average customer pays for a meal or combo</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="foodCost">Food & Ingredients</label>
+              <div class="input-wrapper">
+                <span class="prefix">$</span>
+                <input type="number" id="foodCost" class="has-prefix" step="0.10" min="0" value="4.25">
+              </div>
+              <div class="helper-text">Meat, produce, sauces, buns</div>
+            </div>
+
+            <div class="form-group">
+              <label for="packagingCost">Boxes, Cups & Fees</label>
+              <div class="input-wrapper">
+                <span class="prefix">$</span>
+                <input type="number" id="packagingCost" class="has-prefix" step="0.05" min="0" value="0.75">
+              </div>
+              <div class="helper-text">Containers, napkins, card fee</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Operating & Fixed Costs -->
+        <section class="card">
+          <div class="card-title">
+            <span>🏢</span>
+            <span>2. Fixed Running Costs</span>
+          </div>
+          <p class="card-subtitle">Bills you have to pay whether you sell 1 meal or 200 meals.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="monthlyFixed">Monthly Fixed Bills</label>
+              <div class="input-wrapper">
+                <span class="prefix">$</span>
+                <input type="number" id="monthlyFixed" class="has-prefix" step="25" min="0" value="2200">
+              </div>
+              <div class="helper-text">Truck lease/loan, commissary, insurance, licenses</div>
+            </div>
+
+            <div class="form-group">
+              <label for="operatingDays">Days Open per Month</label>
+              <div class="input-wrapper">
+                <input type="number" id="operatingDays" class="has-suffix" step="1" min="1" max="31" value="20">
+                <span class="suffix">days</span>
+              </div>
+              <div class="helper-text">How many days your truck is out selling</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <label for="dailyFixed">Daily Direct Costs (Per Shift)</label>
+            <div class="input-wrapper">
+              <span class="prefix">$</span>
+              <input type="number" id="dailyFixed" class="has-prefix" step="5" min="0" value="60">
+            </div>
+            <div class="helper-text">Daily spot/pitch fee, generator fuel, parking, daily helper wage</div>
+          </div>
+        </section>
+
+        <!-- 3. Take-Home Profit Goal (Optional) -->
+        <section class="card">
+          <div class="card-title">
+            <span>🎯</span>
+            <span>3. Daily Profit Goal (Optional)</span>
+          </div>
+          <p class="card-subtitle">Leave at $0 to see your pure break-even point, or enter a target take-home profit.</p>
+
+          <div class="form-group">
+            <label for="targetProfit">Desired Daily Profit</label>
+            <div class="input-wrapper">
+              <span class="prefix">$</span>
+              <input type="number" id="targetProfit" class="has-prefix" step="25" min="0" value="0">
+            </div>
+            <div class="helper-text">Your personal daily take-home earnings goal above expenses</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Standout Results -->
+      <div class="results-column">
+
+        <!-- Standout Hero Card -->
+        <div class="hero-card">
+          <div class="hero-label" id="heroLabel">Meals Needed Today</div>
+          <div class="hero-number-wrap">
+            <span class="hero-number" id="mealsNeededDisplay">19</span>
+            <span class="hero-unit">meals</span>
+          </div>
+          <p class="hero-subtext" id="heroSubtext">Sell 19 meals today to cover all costs ($0 profit)</p>
+        </div>
+
+        <!-- 4 Key supporting stats -->
+        <div class="stats-grid">
+          <div class="stat-pill">
+            <div class="stat-pill-label">Daily Sales Needed</div>
+            <div class="stat-pill-value" id="dailyRevenueDisplay">$266</div>
+            <div class="stat-pill-sub">Total register intake</div>
+          </div>
+
+          <div class="stat-pill">
+            <div class="stat-pill-label">Profit per Meal</div>
+            <div class="stat-pill-value" id="marginDisplay">$9.00</div>
+            <div class="stat-pill-sub" id="marginPercentDisplay">64.3% margin</div>
+          </div>
+
+          <div class="stat-pill">
+            <div class="stat-pill-label">Daily Overhead</div>
+            <div class="stat-pill-value" id="dailyOverheadDisplay">$170</div>
+            <div class="stat-pill-sub">Cost just to open today</div>
+          </div>
+
+          <div class="stat-pill">
+            <div class="stat-pill-label">Monthly Breakeven</div>
+            <div class="stat-pill-value" id="monthlyMealsDisplay">380</div>
+            <div class="stat-pill-sub">Total meals this month</div>
+          </div>
+        </div>
+
+        <!-- Shift Pace Calculator -->
+        <div class="pace-box">
+          <div class="pace-header">
+            <span class="pace-title">⏱️ Rush Hour Target Pace</span>
+            <select id="shiftHours" class="shift-select" aria-label="Shift Length">
+              <option value="3">3-hour lunch rush</option>
+              <option value="4">4-hour shift</option>
+              <option value="5" selected>5-hour shift</option>
+              <option value="6">6-hour shift</option>
+              <option value="8">8-hour full day</option>
+            </select>
+          </div>
+          <div class="pace-display" id="paceDisplay">
+            Aim for about <strong>4 meals / hour</strong> during your shift.
+          </div>
+        </div>
+
+        <!-- Financial Breakdown Card -->
+        <div class="card" style="padding: 1.15rem 1.25rem;">
+          <div class="card-title" style="font-size: 0.95rem; margin-bottom: 0.5rem;">
+            <span>📋</span>
+            <span>How Your Target Was Calculated</span>
+          </div>
+          <ul class="breakdown-list">
+            <li class="breakdown-item">
+              <span>Monthly overhead divided by <span id="bdDays">20</span> days:</span>
+              <strong id="bdMonthlyShare">$110.00 / day</strong>
+            </li>
+            <li class="breakdown-item">
+              <span>Daily spot, gas & helper costs:</span>
+              <strong id="bdDailyDirect">+$60.00 / day</strong>
+            </li>
+            <li class="breakdown-item" id="bdProfitRow" style="display: none;">
+              <span>Target daily profit:</span>
+              <strong id="bdProfitVal">+$0.00 / day</strong>
+            </li>
+            <li class="breakdown-item total">
+              <span>Total cash needed today:</span>
+              <strong id="bdTotalNeeded">$170.00</strong>
+            </li>
+            <li class="breakdown-item" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem;">
+              <span>Divided by <span id="bdMealMargin">$9.00</span> profit kept per meal:</span>
+              <span id="bdFormula">= <strong id="bdMealsRaw">18.9</strong> &rarr; rounded up to <strong id="bdMealsRounded">19</strong></span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+    <footer>
+      Built for hardworking food truck owners • Simple math, zero guesswork.
+    </footer>
+
+  </div>
+
+  <script>
+    // Presets definitions
+    const presets = {
+      taco: {
+        price: 12.00,
+        food: 3.50,
+        pack: 0.70,
+        monthly: 2000,
+        days: 22,
+        daily: 50,
+        profit: 0
+      },
+      burger: {
+        price: 15.50,
+        food: 4.80,
+        pack: 0.80,
+        monthly: 2600,
+        days: 20,
+        daily: 75,
+        profit: 0
+      },
+      coffee: {
+        price: 7.50,
+        food: 1.60,
+        pack: 0.65,
+        monthly: 1800,
+        days: 24,
+        daily: 40,
+        profit: 0
+      }
+    };
+
+    function applyPreset(name) {
+      const p = presets[name];
+      if (!p) return;
+      document.getElementById('mealPrice').value = p.price.toFixed(2);
+      document.getElementById('foodCost').value = p.food.toFixed(2);
+      document.getElementById('packagingCost').value = p.pack.toFixed(2);
+      document.getElementById('monthlyFixed').value = p.monthly;
+      document.getElementById('operatingDays').value = p.days;
+      document.getElementById('dailyFixed').value = p.daily;
+      document.getElementById('targetProfit').value = p.profit;
+      calculate();
+    }
+
+    function showError(title, message) {
+      const banner = document.getElementById('errorBanner');
+      document.getElementById('errorTitle').textContent = title;
+      document.getElementById('errorMessage').textContent = message;
+      banner.classList.add('active');
+    }
+
+    function hideError() {
+      const banner = document.getElementById('errorBanner');
+      banner.classList.remove('active');
+    }
+
+    function calculate() {
+      // Read Inputs
+      const mealPrice = parseFloat(document.getElementById('mealPrice').value) || 0;
+      const foodCost = parseFloat(document.getElementById('foodCost').value) || 0;
+      const packagingCost = parseFloat(document.getElementById('packagingCost').value) || 0;
+      const monthlyFixed = parseFloat(document.getElementById('monthlyFixed').value) || 0;
+      const operatingDays = parseFloat(document.getElementById('operatingDays').value) || 0;
+      const dailyFixed = parseFloat(document.getElementById('dailyFixed').value) || 0;
+      const targetProfit = parseFloat(document.getElementById('targetProfit').value) || 0;
+      const shiftHours = parseFloat(document.getElementById('shiftHours').value) || 5;
+
+      // Variable cost & margin
+      const totalVariableCost = foodCost + packagingCost;
+      const contributionMargin = mealPrice - totalVariableCost;
+
+      // Validate inputs with friendly messages
+      if (mealPrice <= 0) {
+        showError(
+          "Enter Your Meal Selling Price",
+          "Please enter the average price customers pay for a meal so we can figure out your break-even number."
+        );
+        setFallbackState();
+        return;
+      }
+
+      if (contributionMargin <= 0) {
+        showError(
+          "Meal Costs Are Higher Than Your Price",
+          `Each meal costs you $${totalVariableCost.toFixed(2)} to make and pack, but you are charging $${mealPrice.toFixed(2)}. You're losing $${Math.abs(contributionMargin).toFixed(2)} on every meal. Increase your price or reduce food costs to calculate a break-even.`
+        );
+        setFallbackState();
+        return;
+      }
+
+      if (operatingDays <= 0) {
+        showError(
+          "Enter Operating Days",
+          "Please enter at least 1 day open per month so we can divide your monthly overhead accurately."
+        );
+        setFallbackState();
+        return;
+      }
+
+      hideError();
+
+      // Daily Fixed Overhead
+      const dailyShareOfMonthly = monthlyFixed / operatingDays;
+      const totalDailyOverhead = dailyShareOfMonthly + dailyFixed;
+      const totalDailyCashNeeded = totalDailyOverhead + targetProfit;
+
+      // Meals needed - ALWAYS rounded up to a whole number
+      const mealsNeededExact = totalDailyCashNeeded / contributionMargin;
+      const mealsNeeded = Math.ceil(mealsNeededExact);
+
+      // Total daily revenue needed
+      const dailyRevenue = mealsNeeded * mealPrice;
+      const monthlyMeals = mealsNeeded * operatingDays;
+
+      // Margin percentage
+      const marginPercent = ((contributionMargin / mealPrice) * 100).toFixed(1);
+
+      // Pace per hour
+      const mealsPerHour = Math.ceil(mealsNeeded / shiftHours);
+
+      // Update Standout Hero Card
+      const heroNumberEl = document.getElementById('mealsNeededDisplay');
+      heroNumberEl.textContent = mealsNeeded.toLocaleString();
+      
+      const heroLabelEl = document.getElementById('heroLabel');
+      const heroSubtextEl = document.getElementById('heroSubtext');
+
+      if (targetProfit > 0) {
+        heroLabelEl.textContent = "Meals Needed (With Target Profit)";
+        heroSubtextEl.textContent = `Sell ${mealsNeeded} meals today to cover all costs AND make $${targetProfit.toLocaleString()} profit.`;
+      } else {
+        heroLabelEl.textContent = "Meals Needed Today to Break Even";
+        heroSubtextEl.textContent = `Sell ${mealsNeeded} meals today to cover all costs ($0 net loss).`;
+      }
+
+      // Update Key Metrics
+      document.getElementById('dailyRevenueDisplay').textContent = `$${Math.round(dailyRevenue).toLocaleString()}`;
+      document.getElementById('marginDisplay').textContent = `$${contributionMargin.toFixed(2)}`;
+      document.getElementById('marginPercentDisplay').textContent = `${marginPercent}% kept as profit`;
+      document.getElementById('dailyOverheadDisplay').textContent = `$${Math.round(totalDailyOverhead).toLocaleString()}`;
+      document.getElementById('monthlyMealsDisplay').textContent = `${monthlyMeals.toLocaleString()}`;
+
+      // Update Pace
+      document.getElementById('paceDisplay').innerHTML = `Aim for about <strong>${mealsPerHour} meals / hour</strong> during your ${shiftHours}-hour shift.`;
+
+      // Update Breakdown details
+      document.getElementById('bdDays').textContent = operatingDays;
+      document.getElementById('bdMonthlyShare').textContent = `$${dailyShareOfMonthly.toFixed(2)} / day`;
+      document.getElementById('bdDailyDirect').textContent = `+$${dailyFixed.toFixed(2)} / day`;
+      
+      const profitRow = document.getElementById('bdProfitRow');
+      if (targetProfit > 0) {
+        profitRow.style.display = 'flex';
+        document.getElementById('bdProfitVal').textContent = `+$${targetProfit.toFixed(2)} / day`;
+      } else {
+        profitRow.style.display = 'none';
+      }
+
+      document.getElementById('bdTotalNeeded').textContent = `$${totalDailyCashNeeded.toFixed(2)}`;
+      document.getElementById('bdMealMargin').textContent = `$${contributionMargin.toFixed(2)}`;
+      document.getElementById('bdMealsRaw').textContent = mealsNeededExact.toFixed(1);
+      document.getElementById('bdMealsRounded').textContent = mealsNeeded;
+    }
+
+    function setFallbackState() {
+      document.getElementById('mealsNeededDisplay').textContent = "—";
+      document.getElementById('heroSubtext').textContent = "Adjust your inputs above to view your target.";
+      document.getElementById('dailyRevenueDisplay').textContent = "—";
+      document.getElementById('marginDisplay').textContent = "—";
+      document.getElementById('dailyOverheadDisplay').textContent = "—";
+      document.getElementById('monthlyMealsDisplay').textContent = "—";
+      document.getElementById('paceDisplay').innerHTML = "Adjust inputs to see your hourly target.";
+    }
+
+    // Attach real-time calculation listeners
+    const inputs = [
+      'mealPrice', 'foodCost', 'packagingCost',
+      'monthlyFixed', 'operatingDays', 'dailyFixed',
+      'targetProfit', 'shiftHours'
+    ];
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', calculate);
+        el.addEventListener('change', calculate);
+      }
+    });
+
+    // Run initial calculation on page load
+    window.addEventListener('DOMContentLoaded', calculate);
+  </script>
+</body>
+</html>
